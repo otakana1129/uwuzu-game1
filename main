@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>架空転売体験ゲーム</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f5f5f7;
+      color: #222;
+    }
+    header {
+      background: #111827;
+      color: #f9fafb;
+      padding: 16px 24px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    header p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      opacity: 0.8;
+    }
+    main {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 16px;
+    }
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+    .panel {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 14px 16px 16px;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+    }
+    .panel h2 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      border-left: 4px solid #3b82f6;
+      padding-left: 8px;
+    }
+    .money {
+      font-weight: bold;
+      color: #16a34a;
+      font-size: 15px;
+    }
+    .small {
+      font-size: 12px;
+      color: #6b7280;
+    }
+    .product-list, .inventory-list, .market-list {
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    .card {
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      padding: 8px 10px;
+      background: #f9fafb;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .card-main {
+      flex: 1;
+    }
+    .card-title {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+    .card-desc {
+      font-size: 12px;
+      color: #4b5563;
+      margin-bottom: 4px;
+    }
+    .card-meta {
+      font-size: 12px;
+      color: #6b7280;
+    }
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      background: #3b82f6;
+      color: #ffffff;
+      font-weight: 600;
+      transition: background 0.15s ease, transform 0.05s ease;
+      white-space: nowrap;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    button:active {
+      transform: scale(0.97);
+    }
+    button.secondary {
+      background: #e5e7eb;
+      color: #111827;
+      font-weight: 500;
+    }
+    button.secondary:hover {
+      background: #d1d5db;
+    }
+    .form-group {
+      margin-bottom: 8px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 2px;
+      color: #374151;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      padding: 6px 8px;
+      font-size: 13px;
+      font-family: inherit;
+      resize: vertical;
+    }
+    .form-group textarea {
+      min-height: 60px;
+      max-height: 120px;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #e0f2fe;
+      color: #0369a1;
+      margin-right: 4px;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .section-header span {
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .log {
+      font-size: 11px;
+      color: #4b5563;
+      max-height: 120px;
+      overflow-y: auto;
+      background: #f9fafb;
+      border-radius: 6px;
+      padding: 6px 8px;
+      border: 1px solid #e5e7eb;
+      margin-top: 4px;
+      white-space: pre-line;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>架空転売体験ゲーム - バーチャルマーケット</h1>
+    <p>架空の商品を仕入れて、自由に説明を書いて、自分だけの販売サイトで転売してみよう。</p>
+  </header>
+
+  <main>
+    <!-- 左カラム：仕入れ＆在庫 -->
+    <section class="panel">
+      <div class="section-header">
+        <h2>仕入れ市場</h2>
+        <span>所持金: <span id="money" class="money"></span></span>
+      </div>
+      <p class="small">気になる商品を仕入れて、あとで好きな説明文をつけて転売できます。</p>
+      <div id="productList" class="product-list"></div>
+
+      <hr style="margin: 12px 0; border: none; border-top: 1px dashed #e5e7eb;" />
+
+      <div class="section-header">
+        <h2>在庫</h2>
+        <span class="small">仕入れた商品がここに入ります</span>
+      </div>
+      <div id="inventoryList" class="inventory-list"></div>
+    </section>
+
+    <!-- 右カラム：出品フォーム＆販売サイト -->
+    <section class="panel">
+      <div class="section-header">
+        <h2>出品フォーム</h2>
+        <span class="small">在庫から1つ選んで出品しよう</span>
+      </div>
+
+      <div class="form-group">
+        <label for="inventorySelect">出品する在庫</label>
+        <select id="inventorySelect">
+          <option value="">在庫から選択...</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="customTitle">販売用タイトル（自由に）</label>
+        <input id="customTitle" type="text" placeholder="例）伝説のゲーミングマグカップ" />
+      </div>
+
+      <div class="form-group">
+        <label for="customDescription">販売用説明文（自由に）</label>
+        <textarea id="customDescription" placeholder="例）深夜の作業を支える、集中力ブーストマグ。熱々が長持ち、手触りも最高。"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="sellPrice">販売価格（コイン）</label>
+        <input id="sellPrice" type="number" min="1" step="1" placeholder="例）3500" />
+      </div>
+
+      <button id="listButton">出品する</button>
+
+      <hr style="margin: 12px 0; border: none; border-top: 1px dashed #e5e7eb;" />
+
+      <div class="section-header">
+        <h2>あなたの販売サイト</h2>
+        <span class="small">「売れた！」ボタンで売上を反映</span>
+      </div>
+      <div id="marketList" class="market-list"></div>
+
+      <div style="margin-top: 10px;">
+        <span class="small">ログ</span>
+        <div id="log" class="log"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // 初期データ：仕入れ市場の商品
+    const baseProducts = [
+      {
+        id: 1,
+        name: "量子コーヒーメーカーβ",
+        desc: "毎回ちょっとだけ味が変わる、実験的コーヒーメーカー。",
+        cost: 2800,
+        tags: ["ガジェット", "コーヒー"]
+      },
+      {
+        id: 2,
+        name: "無限メモ帳（99%）",
+        desc: "ほぼ無限に書けるが、たまに1ページだけ消えるメモ帳。",
+        cost: 1200,
+        tags: ["文房具", "ネタ"]
+      },
+      {
+        id: 3,
+        name: "集中力ブーストマグ",
+        desc: "飲み物が冷めにくく、作業スイッチが入りやすいと言われているマグカップ。",
+        cost: 1800,
+        tags: ["生活", "デスク"]
+      },
+      {
+        id: 4,
+        name: "ポケット用ホワイトボード",
+        desc: "アイデアが浮かんだ瞬間に書ける、ミニホワイトボードセット。",
+        cost: 900,
+        tags: ["アイデア", "持ち運び"]
+      },
+      {
+        id: 5,
+        name: "静音キーボードカバー",
+        desc: "深夜タイピングの罪悪感を軽減する、しっとり静音カバー。",
+        cost: 2300,
+        tags: ["PC周辺", "静音"]
+      }
+    ];
+
+    let money = 10000;
+    let inventory = []; // {id, baseId, name, cost}
+    let listings = [];  // {id, baseName, title, description, price}
+
+    const moneyEl = document.getElementById("money");
+    const productListEl = document.getElementById("productList");
+    const inventoryListEl = document.getElementById("inventoryList");
+    const inventorySelectEl = document.getElementById("inventorySelect");
+    const marketListEl = document.getElementById("marketList");
+    const logEl = document.getElementById("log");
+
+    const customTitleEl = document.getElementById("customTitle");
+    const customDescriptionEl = document.getElementById("customDescription");
+    const sellPriceEl = document.getElementById("sellPrice");
+    const listButtonEl = document.getElementById("listButton");
+
+    function formatMoney(value) {
+      return value.toLocaleString("ja-JP") + " コイン";
+    }
+
+    function renderMoney() {
+      moneyEl.textContent = formatMoney(money);
+    }
+
+    function log(message) {
+      const time = new Date().toLocaleTimeString("ja-JP", { hour12: false });
+      logEl.textContent = `[${time}] ${message}\n` + logEl.textContent;
+    }
+
+    function renderProducts() {
+      productListEl.innerHTML = "";
+      baseProducts.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const main = document.createElement("div");
+        main.className = "card-main";
+
+        const title = document.createElement("div");
+        title.className = "card-title";
+        title.textContent = p.name;
+
+        const desc = document.createElement("div");
+        desc.className = "card-desc";
+        desc.textContent = p.desc;
+
+        const meta = document.createElement("div");
+        meta.className = "card-meta";
+        meta.textContent = `仕入れ価格: ${formatMoney(p.cost)}`;
+
+        const tags = document.createElement("div");
+        p.tags.forEach(t => {
+          const span = document.createElement("span");
+          span.className = "tag";
+          span.textContent = t;
+          tags.appendChild(span);
+        });
+
+        main.appendChild(title);
+        main.appendChild(desc);
+        main.appendChild(tags);
+        main.appendChild(meta);
+
+        const btn = document.createElement("button");
+        btn.textContent = "仕入れる";
+        btn.onclick = () => buyProduct(p);
+
+        card.appendChild(main);
+        card.appendChild(btn);
+        productListEl.appendChild(card);
+      });
+    }
+
+    function renderInventory() {
+      inventoryListEl.innerHTML = "";
+      inventorySelectEl.innerHTML = '<option value="">在庫から選択...</option>';
+
+      if (inventory.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "small";
+        empty.textContent = "在庫はまだありません。まずは仕入れてみましょう。";
+        inventoryListEl.appendChild(empty);
+        return;
+      }
+
+      inventory.forEach((item, index) => {
+        const base = baseProducts.find(p => p.id === item.baseId);
+
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const main = document.createElement("div");
+        main.className = "card-main";
+
+        const title = document.createElement("div");
+        title.className = "card-title";
+        title.textContent = base ? base.name : "不明な商品";
+
+        const meta = document.createElement("div");
+        meta.className = "card-meta";
+        meta.textContent = `仕入れ価格: ${formatMoney(item.cost)}`;
+
+        main.appendChild(title);
+        main.appendChild(meta);
+
+        const btn = document.createElement("button");
+        btn.className = "secondary";
+        btn.textContent = "出品候補にする";
+        btn.onclick = () => {
+          inventorySelectEl.value = String(item.id);
+          log(`在庫「${base ? base.name : "不明な商品"}」を出品候補に選択しました。`);
+        };
+
+        card.appendChild(main);
+        card.appendChild(btn);
+        inventoryListEl.appendChild(card);
+
+        const option = document.createElement("option");
+        option.value = String(item.id);
+        option.textContent = `${base ? base.name : "不明な商品"}（仕入れ: ${item.cost}）`;
+        inventorySelectEl.appendChild(option);
+      });
+    }
+
+    function renderMarket() {
+      marketListEl.innerHTML = "";
+
+      if (listings.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "small";
+        empty.textContent = "まだ出品はありません。右上のフォームから出品してみましょう。";
+        marketListEl.appendChild(empty);
+        return;
+      }
+
+      listings.forEach(listing => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const main = document.createElement("div");
+        main.className = "card-main";
+
+        const title = document.createElement("div");
+        title.className = "card-title";
+        title.textContent = listing.title || listing.baseName;
+
+        const desc = document.createElement("div");
+        desc.className = "card-desc";
+        desc.textContent = listing.description || "説明文なし";
+
+        const meta = document.createElement("div");
+        meta.className = "card-meta";
+        meta.textContent = `販売価格: ${formatMoney(listing.price)} / 元の商品: ${listing.baseName}`;
+
+        main.appendChild(title);
+        main.appendChild(desc);
+        main.appendChild(meta);
+
+        const btn = document.createElement("button");
+        btn.textContent = "売れた！";
+        btn.onclick = () => sellListing(listing.id);
+
+        card.appendChild(main);
+        card.appendChild(btn);
+        marketListEl.appendChild(card);
+      });
+    }
+
+    function buyProduct(product) {
+      if (money < product.cost) {
+        log(`所持金が足りません。「${product.name}」は仕入れできません。`);
+        return;
+      }
+      money -= product.cost;
+      const invItem = {
+        id: Date.now() + Math.random(),
+        baseId: product.id,
+        cost: product.cost
+      };
+      inventory.push(invItem);
+      renderMoney();
+      renderInventory();
+      log(`「${product.name}」を ${formatMoney(product.cost)} で仕入れました。`);
+    }
+
+    function listProduct() {
+      const invId = inventorySelectEl.value;
+      if (!invId) {
+        alert("出品する在庫を選んでください。");
+        return;
+      }
+      const invIndex = inventory.findIndex(i => String(i.id) === invId);
+      if (invIndex === -1) {
+        alert("在庫が見つかりません。");
+        return;
+      }
+      const invItem = inventory[invIndex];
+      const base = baseProducts.find(p => p.id === invItem.baseId);
+
+      const title = customTitleEl.value.trim() || (base ? base.name : "無題の商品");
+      const description = customDescriptionEl.value.trim();
+      const priceValue = Number(sellPriceEl.value);
+
+      if (!priceValue || priceValue <= 0) {
+        alert("販売価格を正しく入力してください。");
+        return;
+      }
+
+      const listing = {
+        id: Date.now() + Math.random(),
+        baseName: base ? base.name : "不明な商品",
+        title,
+        description,
+        price: priceValue
+      };
+
+      listings.push(listing);
+      inventory.splice(invIndex, 1);
+
+      renderInventory();
+      renderMarket();
+
+      inventorySelectEl.value = "";
+      customTitleEl.value = "";
+      customDescriptionEl.value = "";
+      sellPriceEl.value = "";
+
+      log(`在庫「${listing.baseName}」を「${title}」として ${formatMoney(priceValue)} で出品しました。`);
+    }
+
+    function sellListing(listingId) {
+      const index = listings.findIndex(l => l.id === listingId);
+      if (index === -1) return;
+      const listing = listings[index];
+      money += listing.price;
+      listings.splice(index, 1);
+      renderMoney();
+      renderMarket();
+      log(`「${listing.title}」が売れました！ ${formatMoney(listing.price)} を獲得。`);
+    }
+
+    listButtonEl.addEventListener("click", listProduct);
+
+    // 初期描画
+    renderMoney();
+    renderProducts();
+    renderInventory();
+    renderMarket();
+    log("ゲーム開始。まずは左側の仕入れ市場から商品を仕入れてみましょう。");
+  </script>
+</body>
+</html>
