@@ -527,26 +527,42 @@
       renderMarket();
       log(`「${listing.title}」が売れました！ ${formatMoney(listing.price)} を獲得。`);
     }
-    // 1分ごとに販売抽選を行う
-    setInterval(() => {
-    if (listings.length === 0) return;
-      listings.forEach(listing => {
-      const chance = Math.random(); // 0〜1
-      const sellProbability = 0.00000000000000000000000000000000000000000000000000000003;  // 0.00000000000000000000000000000000000000000000003%の確率で売れる
+// 1分ごとに販売抽選を行う（安定版）
+setInterval(() => {
+  if (listings.length === 0) return;
 
-      if (chance < sellProbability) {
-        // 売れた処理
-        money += listing.price;
-        log(`自動販売：${listing.title} が売れました！ ${formatMoney(listing.price)} を獲得。`);
+  // listings をコピーしてループ（安全）
+  const currentListings = [...listings];
 
-        // マーケットから削除
-        listings = listings.filter(l => l.id !== listing.id);
+  // 売れた商品を一時的に保存
+  const soldItems = [];
 
-        renderMoney();
-        renderMarket();
-      }
-    });
-    }, 60000); // 60000ms = 1分
+  currentListings.forEach(listing => {
+    const chance = Math.random(); // 0〜1
+    const sellProbability = 0.3;  // 30%の確率で売れる
+
+    if (chance < sellProbability) {
+      soldItems.push(listing);
+    }
+  });
+
+  // 売れた商品をまとめて処理
+  soldItems.forEach(item => {
+    money += item.price;
+    log(`自動販売：${item.title} が売れました！ ${formatMoney(item.price)} を獲得。`);
+
+    // マーケットから削除
+    listings = listings.filter(l => l.id !== item.id);
+  });
+
+  // 表示更新
+  if (soldItems.length > 0) {
+    renderMoney();
+    renderMarket();
+  }
+
+　}, 60000); // 60000ms = 1分
+
 
     listButtonEl.addEventListener("click", listProduct);
 
