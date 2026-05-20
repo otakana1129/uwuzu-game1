@@ -246,6 +246,27 @@
       </div>
     </section>
   </main>
+// 1分ごとに販売抽選を行う
+setInterval(() => {
+  if (listings.length === 0) return;
+
+  listings.forEach(listing => {
+    const chance = Math.random(); // 0〜1
+    const sellProbability = 0.3;  // 30%の確率で売れる
+
+    if (chance < sellProbability) {
+      // 売れた処理
+      money += listing.price;
+      log(`自動販売：${listing.title} が売れました！ ${formatMoney(listing.price)} を獲得。`);
+
+      // マーケットから削除
+      listings = listings.filter(l => l.id !== listing.id);
+
+      renderMoney();
+      renderMarket();
+    }
+  });
+}, 60000); // 60000ms = 1分
 
   <script>
     // 初期データ：仕入れ市場の商品
