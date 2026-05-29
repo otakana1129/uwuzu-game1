@@ -1,4 +1,128 @@
 <!DOCTYPE html>
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ログイン＆会員登録</title>
+
+<style>
+    body{
+        font-family: Arial, sans-serif;
+        background: #222;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .box{
+        background: #333;
+        padding: 30px;
+        border-radius: 10px;
+        width: 300px;
+        text-align: center;
+    }
+
+    input{
+        width: 90%;
+        padding: 10px;
+        margin: 10px 0;
+        border: none;
+        border-radius: 5px;
+    }
+
+    button{
+        padding: 10px 20px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 5px;
+        background: #4CAF50;
+        color: white;
+        cursor: pointer;
+    }
+
+    button:hover{
+        background: #45a049;
+    }
+
+    #registerScreen{
+        display: none;
+    }
+
+    #message{
+        margin-top: 15px;
+        color: yellow;
+    }
+</style>
+</head>
+<body>
+
+<!-- ログイン画面 -->
+<div class="box" id="loginScreen">
+    <h2>ログイン</h2>
+
+    <input type="text" id="loginUsername" placeholder="ユーザーネーム">
+    <input type="password" id="loginPassword" placeholder="パスワード">
+
+    <br>
+    <button onclick="login()">ログイン</button>
+    <button onclick="showRegister()">新規会員登録</button>
+
+    <div id="message"></div>
+</div>
+
+<!-- 会員登録画面 -->
+<div class="box" id="registerScreen">
+    <h2>新規会員登録</h2>
+
+    <input type="text" id="registerUsername" placeholder="ユーザーネーム">
+    <input type="password" id="registerPassword" placeholder="パスワード">
+
+    <br>
+    <button onclick="register()">登録</button>
+</div>
+
+<script>
+    // 保存用
+    let savedUsername = "";
+    let savedPassword = "";
+
+    // 会員登録画面を表示
+    function showRegister(){
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("registerScreen").style.display = "block";
+    }
+
+    // 登録処理
+    function register(){
+        savedUsername = document.getElementById("registerUsername").value;
+        savedPassword = document.getElementById("registerPassword").value;
+
+        alert("登録完了！");
+
+        document.getElementById("registerScreen").style.display = "none";
+        document.getElementById("loginScreen").style.display = "block";
+    }
+
+    // ログイン処理
+    function login(){
+        const username = document.getElementById("loginUsername").value;
+        const password = document.getElementById("loginPassword").value;
+
+        if(username === savedUsername && password === savedPassword){
+            document.getElementById("message").innerText = "ログインしました。";
+        } else {
+            document.getElementById("message").innerText = "ユーザー名またはパスワードが違います。";
+        }
+    }
+</script>
+
+</body>
+</html>
+
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
