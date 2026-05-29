@@ -3,133 +3,178 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ログイン付きゲーム</title>
+<title>フリマゲーム</title>
 
 <style>
     body{
-        margin: 0;
+        margin:0;
         font-family: Arial, sans-serif;
-        background: #222;
-        color: white;
+        background:#222;
+        color:white;
     }
 
-    /* ログイン画面 */
-    #loginContainer{
-        position: fixed;
-        width: 100%;
-        height: 100vh;
-        background: rgba(0,0,0,0.9);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .box{
-        background: #333;
-        padding: 30px;
-        border-radius: 10px;
-        width: 300px;
-        text-align: center;
-    }
-
-    input{
-        width: 90%;
-        padding: 10px;
-        margin: 10px 0;
-        border: none;
-        border-radius: 5px;
+    h1,h2,h3{
+        margin-top:0;
     }
 
     button{
-        padding: 10px 20px;
-        margin-top: 10px;
-        border: none;
-        border-radius: 5px;
-        background: #4CAF50;
-        color: white;
-        cursor: pointer;
+        padding:10px 15px;
+        margin:5px;
+        border:none;
+        border-radius:5px;
+        background:#4CAF50;
+        color:white;
+        cursor:pointer;
     }
 
     button:hover{
-        background: #45a049;
+        background:#45a049;
+    }
+
+    input, textarea{
+        width:95%;
+        padding:8px;
+        margin:5px 0;
+        border:none;
+        border-radius:5px;
+    }
+
+    .screen{
+        display:none;
+        padding:20px;
+    }
+
+    .box{
+        background:#333;
+        padding:15px;
+        border-radius:10px;
+        margin-top:15px;
+    }
+
+    .item{
+        background:#444;
+        padding:10px;
+        border-radius:8px;
+        margin:10px 0;
+    }
+
+    #loginContainer{
+        width:100%;
+        height:100vh;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        background:#111;
     }
 
     #registerScreen{
-        display: none;
+        display:none;
     }
 
-    #message{
-        margin-top: 10px;
-        color: yellow;
+    .money{
+        color:gold;
+        font-size:22px;
     }
 
-    /* ゲーム画面 */
-    #gameScreen{
-        display: none;
-        text-align: center;
-        padding-top: 100px;
+    .clickable{
+        color:skyblue;
+        cursor:pointer;
     }
 
-    canvas{
-        background: black;
-        border: 3px solid white;
+    .clickable:hover{
+        text-decoration:underline;
     }
 </style>
 </head>
 <body>
 
-<!-- ログイン画面 -->
+<!-- ログイン -->
 <div id="loginContainer">
 
-    <!-- ログイン -->
     <div class="box" id="loginScreen">
         <h2>ログイン</h2>
 
         <input type="text" id="loginUsername" placeholder="ユーザーネーム">
         <input type="password" id="loginPassword" placeholder="パスワード">
 
-        <br>
         <button onclick="login()">ログイン</button>
         <button onclick="showRegister()">新規会員登録</button>
 
         <div id="message"></div>
     </div>
 
-    <!-- 会員登録 -->
     <div class="box" id="registerScreen">
         <h2>新規会員登録</h2>
 
         <input type="text" id="registerUsername" placeholder="ユーザーネーム">
         <input type="password" id="registerPassword" placeholder="パスワード">
 
-        <br>
         <button onclick="register()">登録</button>
     </div>
 
 </div>
 
-<!-- 既存のゲーム -->
-<div id="gameScreen">
-    <h1>ゲームスタート！</h1>
+<!-- ゲーム -->
+<div id="gameScreen" class="screen">
 
-    <canvas id="gameCanvas" width="500" height="300"></canvas>
+    <h1>フリマゲーム</h1>
+
+    <div class="money">
+        所持金: <span id="money">10000</span> 円
+    </div>
+
+    <div class="box">
+        <button onclick="showSection('shopSection')">仕入れる</button>
+        <button onclick="showSection('sellSection')">フリマに売る</button>
+        <button onclick="showSection('marketSection')">フリマで買う</button>
+    </div>
+
+    <!-- 仕入れ -->
+    <div id="shopSection" class="screen box">
+        <h2>仕入れショップ</h2>
+        <div id="shopItems"></div>
+    </div>
+
+    <!-- 売る -->
+    <div id="sellSection" class="screen box">
+        <h2>フリマ出品</h2>
+
+        <h3>所持品</h3>
+        <div id="inventory"></div>
+
+        <hr>
+
+        <input type="text" id="sellName" placeholder="商品名">
+        <textarea id="sellDescription" placeholder="説明"></textarea>
+        <input type="number" id="sellPrice" placeholder="価格">
+
+        <button onclick="sellItem()">売る</button>
+    </div>
+
+    <!-- 買う -->
+    <div id="marketSection" class="screen box">
+        <h2>フリマ</h2>
+        <div id="marketItems"></div>
+    </div>
+
 </div>
 
 <script>
-    // 保存用
+    // ===== ログイン =====
     let savedUsername = "";
     let savedPassword = "";
 
-    // 会員登録画面表示
     function showRegister(){
         document.getElementById("loginScreen").style.display = "none";
         document.getElementById("registerScreen").style.display = "block";
     }
 
-    // 登録
     function register(){
-        savedUsername = document.getElementById("registerUsername").value;
-        savedPassword = document.getElementById("registerPassword").value;
+        savedUsername =
+            document.getElementById("registerUsername").value;
+
+        savedPassword =
+            document.getElementById("registerPassword").value;
 
         alert("登録完了！");
 
@@ -137,57 +182,275 @@
         document.getElementById("loginScreen").style.display = "block";
     }
 
-    // ログイン
     function login(){
-        const username = document.getElementById("loginUsername").value;
-        const password = document.getElementById("loginPassword").value;
 
-        if(username === savedUsername && password === savedPassword){
+        const user =
+            document.getElementById("loginUsername").value;
 
-            // ログイン画面を消す
+        const pass =
+            document.getElementById("loginPassword").value;
+
+        if(user === savedUsername && pass === savedPassword){
+
+            currentUser = user;
+
             document.getElementById("loginContainer").style.display = "none";
-
-            // ゲーム表示
             document.getElementById("gameScreen").style.display = "block";
 
-            startGame();
+            generateShop();
 
-        } else {
+        }else{
             document.getElementById("message").innerText =
-                "ユーザー名またはパスワードが違います。";
+            "ユーザー名またはパスワードが違います";
         }
     }
 
-    // ===== 既存ゲーム =====
-    function startGame(){
+    // ===== ゲームデータ =====
+    let currentUser = "";
+    let money = 10000;
 
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
+    let inventoryItems = [];
 
-        let x = 50;
-        let y = 150;
-        let dx = 3;
+    let fleaMarket = [
+        {
+            seller:"たろう",
+            name:"中古ゲーム機",
+            description:"少しキズあり",
+            price:3000
+        },
+        {
+            seller:"はなこ",
+            name:"レアカード",
+            description:"限定版カードです",
+            price:5000
+        }
+    ];
 
-        function gameLoop(){
+    // ===== 商品 =====
+    const possibleItems = [
+        {name:"りんご", price:100},
+        {name:"ノートPC", price:5000},
+        {name:"イヤホン", price:1500},
+        {name:"ゲームソフト", price:3000},
+        {name:"キーボード", price:2500},
+        {name:"マウス", price:1200},
+        {name:"スマホ", price:8000},
+        {name:"カメラ", price:7000},
+        {name:"本", price:600},
+        {name:"時計", price:4000}
+    ];
 
-            ctx.clearRect(0,0,canvas.width,canvas.height);
+    // ===== 表示切替 =====
+    function showSection(id){
 
-            // プレイヤー
-            ctx.fillStyle = "lime";
-            ctx.fillRect(x,y,50,50);
+        const sections = [
+            "shopSection",
+            "sellSection",
+            "marketSection"
+        ];
 
-            x += dx;
+        sections.forEach(sec=>{
+            document.getElementById(sec).style.display = "none";
+        });
 
-            // 壁反射
-            if(x + 50 > canvas.width || x < 0){
-                dx = -dx;
+        document.getElementById(id).style.display = "block";
+
+        updateInventory();
+        updateMarket();
+    }
+
+    // ===== 所持金更新 =====
+    function updateMoney(){
+        document.getElementById("money").innerText = money;
+    }
+
+    // ===== 仕入れ =====
+    function generateShop(){
+
+        const shop = document.getElementById("shopItems");
+        shop.innerHTML = "";
+
+        for(let i=0;i<5;i++){
+
+            const item =
+                possibleItems[Math.floor(Math.random()*possibleItems.length)];
+
+            const div = document.createElement("div");
+            div.className = "item";
+
+            div.innerHTML = `
+                <b>${item.name}</b><br>
+                ${item.price} 円<br>
+                <button onclick="buyShopItem('${item.name}', ${item.price})">
+                    買う
+                </button>
+            `;
+
+            shop.appendChild(div);
+        }
+    }
+
+    function buyShopItem(name, price){
+
+        if(money >= price){
+
+            money -= price;
+
+            inventoryItems.push({
+                name:name,
+                description:"仕入れた商品",
+                price:price
+            });
+
+            updateMoney();
+            updateInventory();
+
+            alert(name + " を購入しました");
+
+        }else{
+            alert("お金が足りません");
+        }
+    }
+
+    // ===== 所持品 =====
+    function updateInventory(){
+
+        const inventory =
+            document.getElementById("inventory");
+
+        inventory.innerHTML = "";
+
+        if(inventoryItems.length === 0){
+            inventory.innerHTML = "所持品なし";
+            return;
+        }
+
+        inventoryItems.forEach(item=>{
+
+            const div = document.createElement("div");
+            div.className = "item";
+
+            div.innerHTML = `
+                <b>${item.name}</b><br>
+                ${item.price} 円
+            `;
+
+            inventory.appendChild(div);
+        });
+    }
+
+    // ===== 出品 =====
+    function sellItem(){
+
+        const name =
+            document.getElementById("sellName").value;
+
+        const description =
+            document.getElementById("sellDescription").value;
+
+        const price =
+            Number(document.getElementById("sellPrice").value);
+
+        if(name === "" || description === "" || price <= 0){
+            alert("入力してください");
+            return;
+        }
+
+        fleaMarket.push({
+            seller: currentUser,
+            name: name,
+            description: description,
+            price: price
+        });
+
+        alert("出品しました");
+
+        updateMarket();
+    }
+
+    // ===== フリマ =====
+    function updateMarket(){
+
+        const market =
+            document.getElementById("marketItems");
+
+        market.innerHTML = "";
+
+        fleaMarket.forEach((item,index)=>{
+
+            const div = document.createElement("div");
+            div.className = "item";
+
+            div.innerHTML = `
+                <div class="clickable"
+                     onclick="toggleDescription(${index})">
+
+                    ${item.name}
+                </div>
+
+                出品者: ${item.seller}<br>
+                価格: ${item.price} 円
+
+                <div id="desc${index}"
+                     style="display:none; margin-top:10px;">
+
+                    説明: ${item.description}<br><br>
+
+                    <button onclick="buyMarketItem(${index})">
+                        買う！
+                    </button>
+                </div>
+            `;
+
+            market.appendChild(div);
+        });
+    }
+
+    function toggleDescription(index){
+
+        const desc =
+            document.getElementById("desc" + index);
+
+        if(desc.style.display === "none"){
+            desc.style.display = "block";
+        }else{
+            desc.style.display = "none";
+        }
+    }
+
+    // ===== フリマ購入 =====
+    function buyMarketItem(index){
+
+        const item = fleaMarket[index];
+
+        if(money >= item.price){
+
+            money -= item.price;
+
+            inventoryItems.push({
+                name:item.name,
+                description:item.description,
+                price:item.price
+            });
+
+            // 出品者がお金をもらう処理
+            if(item.seller === currentUser){
+                money += item.price;
             }
 
-            requestAnimationFrame(gameLoop);
-        }
+            fleaMarket.splice(index,1);
 
-        gameLoop();
+            updateMoney();
+            updateInventory();
+            updateMarket();
+
+            alert(item.name + " を購入しました");
+
+        }else{
+            alert("お金が足りません");
+        }
     }
+
 </script>
 
 </body>
